@@ -1,5 +1,7 @@
 
 library(raster)
+library(ggfortify)
+library(vegan)
 
 source("scripts/data_import.R")
 
@@ -26,6 +28,17 @@ data$bio12 <- raster::extract(bio12, points, method = "simple", dr=TRUE, sp=TRUE
 data$bio15 <- raster::extract(bio15, points, method = "simple", dr=TRUE, sp=TRUE) %>% as.data.frame() %>% dplyr::select(wc2.1_5m_bio_15) %>% deframe()
 data$bio17 <- raster::extract(bio17, points, method = "simple", dr=TRUE, sp=TRUE) %>% as.data.frame() %>% dplyr::select(wc2.1_5m_bio_17) %>% deframe()
 
-colnames(data)
+table(is.na(data[,8:13]))
+
+# elimino puntos que quedaron fuera de los rasteres climaticos
+data <- data %>% subset(!is.na(data[,8]))
+
+str(data)
 
 rm(bio1, bio7, bio8, bio12, bio15, bio17)
+
+# PCA para ver nichos climaticos
+clim_pca <- prcomp(data[,8:13], scale=T, center=T)
+clim_pca
+autoplot(clim_pca, data=data, colour='section', loadings=TRUE, loadings.label=TRUE)
+autoplot(clim_pca, data=data, colour='subgenus', loadings=TRUE, loadings.label=TRUE)
